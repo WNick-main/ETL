@@ -1,0 +1,53 @@
+version: "3.9"
+services:
+  prod_db:
+    image: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: rootpass
+      POSTGRES_USER: root
+    env_file:
+      prod.env
+    volumes:
+      - ./prod:/docker-entrypoint-initdb.d/
+      - ./prod_data:/var/lib/postgresql/data/
+  data_generator:
+    build: ./docker/prod/.
+    env_file: prod.env
+    volumes:
+     - ./generator:/app 
+    depends_on: 
+      - prod_db
+      - stage_db
+  stage_db:
+    image: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    depends_on:
+      - prod_db
+    environment:
+      POSTGRES_PASSWORD: rootpass
+      POSTGRES_USER: root
+    env_file: stage.env
+    volumes:
+      - ./stage:/docker-entrypoint-initdb.d/
+      - ./stage_data:/var/lib/postgresql/data
+  replacer:
+    build: docker/prod/.
+    env_file: stage.env
+    volumes:
+      - ./replacer:/app
+      - ./dumps:/dumps/
+      - ./archive:/archive
+    depends_on:
+      - prod_db
+      - stage_db
