@@ -51,3 +51,10 @@ services:
     depends_on:
       - prod_db
       - stage_db
+  airflow:
+    image: puckel/docker-airflow
+    volumes: 
+      - ./dags:/usr/local/airflow/dags
+    ports:
+      - "8080:8080"
+    command: webserver

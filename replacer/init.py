@@ -17,7 +17,9 @@ prod_connector = psycopg2.connect(
     host='prod_db'
 )
 
+
 def init_stage_tables():
+
     with stage_connector.cursor() as cursor:
         for schema in os.listdir('schemas'):
             with open(os.path.join('schemas', schema)) as f:
@@ -53,9 +55,15 @@ def get_maxID(tname):
     return record[0][0]
 
 if __name__ == "__main__":
-    init_stage_tables()
-    for tname in ["spellers", "spells"]:
-        get_data(tname,get_maxID(tname))
-        put_data(tname)
+    while True:
+        try:
+            init_stage_tables()
+            break
+        except:
+            time.sleep(15)
+    
+    #for tname in ["spellers", "spells"]:
+    #    get_data(tname,get_maxID(tname))
+    #    put_data(tname)
     while True:
         time.sleep(20)

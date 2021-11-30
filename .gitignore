@@ -1,0 +1,4 @@
+prod_data/*
+stage_data/*
+*.pyc
+dumps/*
